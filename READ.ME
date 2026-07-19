@@ -1,0 +1,68 @@
+DIY PWM fan control for Raspberry Pi projects.
+
+   The origin of this project is a very low power router/access point/NAS server I built for my off-grid solar powered RV life.  I wanted the lowest possible power consumption for modest solar powered setups like mine.  Tiny house owners, RV dwellers, narrow boat life, van life, etc.  The server is built around a Raspberry Pi zero 2, with a 1TB SSD for storage.  The power consumption ranges from at or just below 2 watts to peaking around 4 watts during heavy load.  
+   
+   Passive cooling was just about cutting it, but under high load I could see the CPU temp rise well above 60C and head toward 70.  Normally this is fine.  The pi will throttle at high temp.   But I don't like to run things hot.  They last longer when kept cool.   However, in keeping with low power consumption and efficiency, I decided to control the fan, rather than just leaving it run.
+   
+   Advantages to fan control can include the following:
+     Longer fan life due to much less wear on the bearings.
+     Lower power consumption, only running the fan when needed.
+     Less noise for those of us that notice that whine the fan makes.
+     Less dust build up due to a fraction of usual fan runtime.
+     
+  Additionally, in order to get the lowest power consumption,  I adjust the fan over a range of 20-100%, mathamatically calculated over an operational temperature window.   The fan starts at 48C and will reach full power at 51C.  This results in the power provided to the fan automatically finding the sweet spot where we use only enough power to provide the cooling needed at that load.  
+  
+  The script is heavily commented and should be easy to read and understand.  I'm not normally a programmer and just figure things out each time I have a new project, so there's probably room for improvement.  I wrote it mostly myself, just asking Gemeni for help with python syntax a few times and a little help with the math. 
+  
+  The script depends on the periphery library for python GPIO control.  This works with the kernel overlay for the PWM chip, allowing for use of the hardware timers rather than the CPU to generate the PWM.  So no CPU is used aside from the quick run through the loop every 15 seconds.
+  Periphery can be installed in most debian based systems with sudo apt install python3-periphery
+  The web site is here if you want to read more about it:
+  https://pypi.org/project/python-periphery/
+  
+  The script itself does the following.  It reads the cpu temp,  if the temp is below the window, it makes sure the fan is off.  If the temp is in the window, it calculats a percentage for the fan speed based on the current temp and sets the PWM duty to match.  If the CPU temp is above the window, it turns the fan on 100%.   Finally, it sleeps the thread for 15 seconds and loops again.
+
+  This results in the fan only using as much power as is needed for the current load, and remaining off if passive cooling is adequate at the time.
+  
+  There is a simple circuit that needs to be built to drive the fan since the Pi's PWM pin can't provide the current needed. The schematic is included in the Github.  It consists of a single NPN transistor, one resistor and two caps.  It can be built on a tiny piece of protoboard and taped inside a pi case next to the fan.
+  
+  The script should be put somewhere in the path, or you can just put it in the /root directory.
+  
+  You can launch it how ever you like, but I've found that making it a service works well and isn't hard to do.
+  
+  To create a service out of it,  create a service control file with the following command.
+  sudo nano /etc/systemd/system/fan-control.service
+  
+  Insert the following into the file, changing the path and script name in the ExecStart line to match your location for the script.  I had mine in /root
+  
+ [Unit]
+Description=Hardware PWM Fan Control Service
+After=local-fs.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/python3 /root/fancontrol.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+
+  Now, you need to enable the service with:
+sudo systemctl enable fan-control.service
+
+  You can start it manually to test it with:
+sudo systemctl start fan-control.service
+
+  It should start and you'll see it running if you type: 
+sudo systemctl status fan-control.service
+
+  The window I chose works quite well on the pi zero,  pi 2 and pi 3.  I didn't test on the 4 or 5.  Depending on how fast and hot they run at idle, you may want to adjust the window to match your unit's behavior.
+  
+I did a video on this project, linked here:
+
+Also, a video on my low power server project if you're interested.  It's a great router/access point/NAS that only draws 2-4 watts.  Perfect for battery powered or solar powered applications.
+https://youtu.be/jYqzQL3SNPY
+
+
