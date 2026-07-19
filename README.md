@@ -61,6 +61,7 @@ sudo systemctl status fan-control.service
   The window I chose works quite well on the pi zero,  pi 2 and pi 3.  I didn't test on the 4 or 5.  Depending on how fast and hot they run at idle, you may want to adjust the window to match your unit's behavior.
   
 I did a video on this project, linked here:
+https://youtu.be/Ffd4o5p7Sts
 
 Also, a video on my low power server project if you're interested.  It's a great router/access point/NAS that only draws 2-4 watts.  Perfect for battery powered or solar powered applications.
 https://youtu.be/jYqzQL3SNPY
