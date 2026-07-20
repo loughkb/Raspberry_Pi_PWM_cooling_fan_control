@@ -41,7 +41,7 @@ After=local-fs.target
 [Service]
 Type=simple
 User=root
-ExecStart=/usr/bin/python3 /root/fancontrol.sh
+ExecStart=/usr/bin/python3 /root/fancontrol.py
 Restart=always
 RestartSec=5
 
